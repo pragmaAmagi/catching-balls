@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #0000AA;
+            color: #FFFFFF;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #splash-screen,
+        #game-screen {
+            text-align: center;
+        }
+
+        #splash-screen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        #start-button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #FFFFFF;
+            color: #0000AA;
+            border: none;
+            cursor: pointer;
+        }
+
+        #game-screen {
+            display: none;
+        }
+
+        #game-canvas {
+            border: 2px solid #FFFFFF;
+        }
+
+        #score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <div id="splash-screen">
+            <h1>Catch the Ball</h1>
+            <button id="start-button">Start Game</button>
+        </div>
+        <div id="game-screen">
+            <canvas id="game-canvas" width="400" height="400"></canvas>
+            <div id="score">Score: 0</div>
+        </div>
+    </div>
+    <script>
+        const splashScreen = document.getElementById('splash-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const startButton = document.getElementById('start-button');
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+
+        let score = 0;
+        let ballX, ballY, ballSpeed;
+        let paddleX, paddleWidth, paddleHeight;
+
+        function initGame() {
+            ballX = canvas.width / 2;
+            ballY = 0;
+            ballSpeed = 2;
+            paddleWidth = 80;
+            paddleHeight = 10;
+            paddleX = (canvas.width - paddleWidth) / 2;
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawPaddle();
+
+            ballY += ballSpeed;
+
+            if (ballY + 10 > canvas.height - paddleHeight &&
+                ballX > paddleX && ballX < paddleX + paddleWidth) {
+                ballY = 0;
+                ballX = Math.random() * canvas.width;
+                score++;
+                scoreElement.textContent = `Score: ${score}`;
+                ballSpeed += 0.2;
+            }
+
+            if (ballY > canvas.height) {
+                alert(`Game Over! Your score: ${score}`);
+                score = 0;
+                scoreElement.textContent = `Score: ${score}`;
+                initGame();
+            }
+
+            requestAnimationFrame(updateGame);
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            paddleX = e.clientX - rect.left - paddleWidth / 2;
+
+            if (paddleX < 0) {
+                paddleX = 0;
+            }
+            if (paddleX + paddleWidth > canvas.width) {
+                paddleX = canvas.width - paddleWidth;
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            splashScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            initGame();
+            updateGame();
+        });
+    </script>
+</body>
+
+</html>
