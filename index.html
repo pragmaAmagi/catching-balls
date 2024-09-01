@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catch the Ball</title>
+    <title>Atari Stargate</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: 'Courier New', Courier, monospace;
-            background-color: #0000AA;
-            color: #FFFFFF;
+            background-color: #000000;
+            color: #00FF00;
         }
 
         #game-container {
@@ -30,13 +30,14 @@
         #splash-screen h1 {
             font-size: 3em;
             margin-bottom: 20px;
+            color: #00FF00;
         }
 
         #start-button {
             font-size: 1.5em;
             padding: 10px 20px;
-            background-color: #FFFFFF;
-            color: #0000AA;
+            background-color: #00FF00;
+            color: #000000;
             border: none;
             cursor: pointer;
         }
@@ -46,12 +47,17 @@
         }
 
         #game-canvas {
-            border: 2px solid #FFFFFF;
+            border: 2px solid #00FF00;
         }
 
-        #score {
+        #score,
+        #exclamation {
             font-size: 1.5em;
             margin-top: 10px;
+        }
+
+        #exclamation {
+            height: 30px;
         }
     </style>
 </head>
@@ -59,12 +65,13 @@
 <body>
     <div id="game-container">
         <div id="splash-screen">
-            <h1>Catch the Ball</h1>
-            <button id="start-button">Start Game</button>
+            <h1>ATARI STARGATE</h1>
+            <button id="start-button">START MISSION</button>
         </div>
         <div id="game-screen">
             <canvas id="game-canvas" width="400" height="400"></canvas>
-            <div id="score">Score: 0</div>
+            <div id="score">SCORE: 0</div>
+            <div id="exclamation"></div>
         </div>
     </div>
     <script>
@@ -74,60 +81,95 @@
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const scoreElement = document.getElementById('score');
+        const exclamationElement = document.getElementById('exclamation');
 
         let score = 0;
         let ballX, ballY, ballSpeed;
         let paddleX, paddleWidth, paddleHeight;
+        let stars = [];
+
+        const exclamations = [
+            "EXCELLENT!",
+            "CHEVRON LOCKED!",
+            "WORMHOLE OPEN!",
+            "INCOMING!",
+            "HYPERDRIVE!",
+            "DIAL THE GATE!",
+        ];
 
         function initGame() {
             ballX = canvas.width / 2;
             ballY = 0;
             ballSpeed = 2;
-            paddleWidth = 80;
+            paddleWidth = 60;
             paddleHeight = 10;
             paddleX = (canvas.width - paddleWidth) / 2;
+            createStars();
+        }
+
+        function createStars() {
+            for (let i = 0; i < 50; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() < 0.5 ? 1 : 2
+                });
+            }
+        }
+
+        function drawStars() {
+            ctx.fillStyle = '#00FF00';
+            stars.forEach(star => {
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+            });
         }
 
         function drawBall() {
-            ctx.beginPath();
-            ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-            ctx.closePath();
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(ballX - 4, ballY - 4, 8, 8);
         }
 
         function drawPaddle() {
-            ctx.beginPath();
-            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-            ctx.closePath();
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
         }
 
         function updateGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawStars();
             drawBall();
             drawPaddle();
 
             ballY += ballSpeed;
 
-            if (ballY + 10 > canvas.height - paddleHeight &&
+            if (ballY + 4 > canvas.height - paddleHeight &&
                 ballX > paddleX && ballX < paddleX + paddleWidth) {
                 ballY = 0;
                 ballX = Math.random() * canvas.width;
                 score++;
-                scoreElement.textContent = `Score: ${score}`;
+                scoreElement.textContent = `SCORE: ${score}`;
                 ballSpeed += 0.2;
+                if (score % 5 === 0) {
+                    showExclamation();
+                }
             }
 
             if (ballY > canvas.height) {
-                alert(`Game Over! Your score: ${score}`);
+                alert(`MISSION FAILED! SCORE: ${score}`);
                 score = 0;
-                scoreElement.textContent = `Score: ${score}`;
+                scoreElement.textContent = `SCORE: ${score}`;
                 initGame();
             }
 
             requestAnimationFrame(updateGame);
+        }
+
+        function showExclamation() {
+            const exclamation = exclamations[Math.floor(Math.random() * exclamations.length)];
+            exclamationElement.textContent = exclamation;
+            setTimeout(() => {
+                exclamationElement.textContent = '';
+            }, 2000);
         }
 
         canvas.addEventListener('mousemove', (e) => {
